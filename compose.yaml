@@ -1,7 +1,8 @@
 services:
   mongodb1:
     container_name: mongodb1
-    image: dh-mirror.gitverse.ru/mongo:latest
+    image: mongo:6.0  # на маке m1 5я версия не работала
+    platform: linux/arm64
     volumes:
       - mongodb1_data_container:/data/db
 
@@ -14,7 +15,7 @@ services:
     depends_on:
       - mongodb1
     ports:
-      - 8080:8080
+      - 8081:8081
     environment:
       MONGODB_URL: "mongodb://mongodb1"
       MONGODB_DATABASE_NAME: "somedb"
