@@ -8,29 +8,20 @@
 docker compose up -d
 ```
 
-Заполняем mongodb данными
+Заполняем mongodb шарды данными и получаем информацию что в шардах 
 
 ```shell
 ./scripts/mongo-init.sh
 ```
 
-## Как проверить
-
-### Если вы запускаете проект на локальной машине
-
-Выполнить curl http://localhost:8081/helloDoc/users/ly1
-
-Как посмотреть распределение по шардам:
-```shell
-docker exec mongos_router mongosh --port 27020 --eval "
-var db = db.getSiblingDB('somedb');
-db.helloDoc.getShardDistribution();
-"
-```
 
 Результат:
 ```shell
-"
+...
+[direct: mongos] somedb> ✅ Добавлено 1000 документов
+
+[direct: mongos] somedb> 📊 Общее количество: 1000
+
 Shard shard1 at shard1/shard1:27018
 {
   data: '21KiB',

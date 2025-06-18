@@ -47,3 +47,8 @@ for (var i = 0; i < 1000; i++) db.helloDoc.insert({ age: i, name: "ly" + i });
 print('✅ Добавлено 1000 документов');
 print('📊 Общее количество: ' + db.helloDoc.countDocuments());
 EOF
+
+docker exec mongos_router mongosh --port 27020 --eval "
+var db = db.getSiblingDB('somedb');
+db.helloDoc.getShardDistribution();
+"
