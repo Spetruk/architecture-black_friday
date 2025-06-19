@@ -1,6 +1,13 @@
 # pymongo-api
 
-## Как запустить
+[task1.drawio](task1.drawio)
+
+
+Перейти в папку sharding-repl-cache
+
+```shell
+cd sharding-repl-cache
+```
 
 Запускаем mongodb и приложение
 
@@ -14,22 +21,45 @@ docker compose up -d
 ./scripts/mongo-init.sh
 ```
 
-## Как проверить
-
-### Если вы запускаете проект на локальной машине
-
-Откройте в браузере http://localhost:8080
-
-### Если вы запускаете проект на предоставленной виртуальной машине
-
-Узнать белый ip виртуальной машины
-
+Результат + можно проверишь время ответов на запросы (кеш работает):
 ```shell
-curl --silent http://ifconfig.me
+...
+[direct: mongos] somedb> ✅ Добавлено 1000 документов
+
+[direct: mongos] somedb> 📊 Общее количество: 1000
+
+Shard shard1 at shard1/shard1:27018,shard1b:27018,shard1c:27018
+{
+  data: '21KiB',
+  docs: 479,
+  chunks: 2,
+  'estimated data per chunk': '10KiB',
+  'estimated docs per chunk': 239
+}
+---
+Shard shard2 at shard2/shard2:27019,shard2b:27019,shard2c:27019
+{
+  data: '23KiB',
+  docs: 521,
+  chunks: 2,
+  'estimated data per chunk': '11KiB',
+  'estimated docs per chunk': 260
+}
+---
+Totals
+{
+  data: '45KiB',
+  docs: 1000,
+  chunks: 4,
+  'Shard shard1': [
+    '47.91 % data',
+    '47.9 % docs in cluster',
+    '46B avg obj size on shard'
+  ],
+  'Shard shard2': [
+    '52.08 % data',
+    '52.1 % docs in cluster',
+    '46B avg obj size on shard'
+  ]
+}
 ```
-
-Откройте в браузере http://<ip виртуальной машины>:8080
-
-## Доступные эндпоинты
-
-Список доступных эндпоинтов, swagger http://<ip виртуальной машины>:8080/docs
