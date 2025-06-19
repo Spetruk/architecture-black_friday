@@ -63,3 +63,13 @@ Totals
   ]
 }
 ```
+
+ADRs:
+
+[task7](tasks/task7.md)
+
+[task8](tasks/task8.md)
+
+[task9](tasks/task9.md)
+
+[task10](tasks/task10.md)
