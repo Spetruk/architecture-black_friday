@@ -1,0 +1,208 @@
+name: sharding-repl-cache
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      app-network:
+        ipv4_address: 173.17.0.2
+
+  # Config Server
+  configSrv:
+    image: mongo:6.0
+    platform: linux/arm64
+    container_name: configSrv
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      app-network:
+        ipv4_address: 173.17.0.10
+    volumes:
+      - config-data:/data/db
+    command:
+      [
+        "--configsvr",
+        "--replSet",
+        "config_server",
+        "--bind_ip_all",
+        "--port",
+        "27017"
+      ]
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      start_period: 10s
+      retries: 5
+
+  # Shard 1
+  shard1:
+    image: mongo:6.0
+    platform: linux/arm64
+    container_name: shard1
+    restart: always
+    ports:
+      - "27018:27018"
+    networks:
+      app-network:
+        ipv4_address: 173.17.0.9
+    volumes:
+      - shard1-data:/data/db
+    command:
+      [
+        "--shardsvr",
+        "--replSet",
+        "shard1",
+        "--bind_ip_all",
+        "--port",
+        "27018"
+      ]
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      start_period: 10s
+      retries: 5
+
+  shard1b:
+    image: mongo:6.0
+    container_name: shard1b
+    platform: linux/arm64
+    networks:
+      app-network:
+        ipv4_address: 173.17.0.11
+    volumes:
+      - shard1b-data:/data/db
+    command: [ "--shardsvr", "--replSet", "shard1", "--bind_ip_all", "--port", "27018" ]
+
+  shard1c:
+    image: mongo:6.0
+    container_name: shard1c
+    platform: linux/arm64
+    networks:
+      app-network:
+        ipv4_address: 173.17.0.12
+    volumes:
+      - shard1c-data:/data/db
+    command: [ "--shardsvr", "--replSet", "shard1", "--bind_ip_all", "--port", "27018" ]
+
+
+  # Shard 2
+  shard2:
+    image: mongo:6.0
+    platform: linux/arm64
+    container_name: shard2
+    restart: always
+    ports:
+      - "27019:27019"
+    networks:
+      app-network:
+        ipv4_address: 173.17.0.8
+    volumes:
+      - shard2-data:/data/db
+    command:
+      [
+        "--shardsvr",
+        "--replSet",
+        "shard2",
+        "--bind_ip_all",
+        "--port",
+        "27019"
+      ]
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      start_period: 10s
+      retries: 5
+
+  shard2b:
+    image: mongo:6.0
+    container_name: shard2b
+    platform: linux/arm64
+    networks:
+      app-network:
+        ipv4_address: 173.17.0.13
+    volumes:
+      - shard2b-data:/data/db
+    command: [ "--shardsvr", "--replSet", "shard2", "--bind_ip_all", "--port", "27019" ]
+
+  shard2c:
+    image: mongo:6.0
+    container_name: shard2c
+    platform: linux/arm64
+    networks:
+      app-network:
+        ipv4_address: 173.17.0.14
+    volumes:
+      - shard2c-data:/data/db
+    command: [ "--shardsvr", "--replSet", "shard2", "--bind_ip_all", "--port", "27019" ]
+
+
+  # Mongos Router
+  mongos_router:
+    image: mongo:6.0
+    platform: linux/arm64
+    container_name: mongos_router
+    restart: always
+    ports:
+      - "27020:27020"
+    networks:
+      app-network:
+        ipv4_address: 173.17.0.7
+    command:
+      [
+        "mongos",
+        "--configdb",
+        "config_server/configSrv:27017",
+        "--bind_ip_all",
+        "--port",
+        "27020"
+      ]
+    depends_on:
+      - configSrv
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      start_period: 10s
+      retries: 5
+
+  # Your API - запускается после mongos
+  pymongo_api:
+    container_name: pymongo_api
+    build:
+      context: api_app
+      dockerfile: Dockerfile
+    image: kazhem/pymongo_api:1.0.0
+    depends_on:
+      - shard1
+      - shard2
+      - configSrv
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
+    environment:
+      MONGODB_URL: "mongodb://mongos_router:27020"
+      MONGODB_DATABASE_NAME: "somedb"
+      REDIS_URL: "redis://redis:6379"
+    # Убрали profiles - теперь API запустится автоматически
+
+networks:
+  app-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 173.17.0.0/16
+
+volumes:
+  config-data:
+  shard1-data:
+  shard1b-data:
+  shard1c-data:
+  shard2-data:
+  shard2b-data:
+  shard2c-data:

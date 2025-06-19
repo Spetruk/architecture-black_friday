@@ -1,13 +1,6 @@
 # pymongo-api
 
-[task1.drawio](task1.drawio)
-
-
-Перейти в папку sharding-repl-cache
-
-```shell
-cd sharding-repl-cache
-```
+## Как запустить
 
 Запускаем mongodb и приложение
 
@@ -15,20 +8,21 @@ cd sharding-repl-cache
 docker compose up -d
 ```
 
-Заполняем mongodb данными
+Заполняем mongodb шарды данными и получаем информацию что в шардах 
 
 ```shell
 ./scripts/mongo-init.sh
 ```
 
-Результат + можно проверишь время ответов на запросы (кеш работает):
+
+Результат:
 ```shell
 ...
 [direct: mongos] somedb> ✅ Добавлено 1000 документов
 
 [direct: mongos] somedb> 📊 Общее количество: 1000
 
-Shard shard1 at shard1/shard1:27018,shard1b:27018,shard1c:27018
+Shard shard1 at shard1/shard1:27018
 {
   data: '21KiB',
   docs: 479,
@@ -37,7 +31,7 @@ Shard shard1 at shard1/shard1:27018,shard1b:27018,shard1c:27018
   'estimated docs per chunk': 239
 }
 ---
-Shard shard2 at shard2/shard2:27019,shard2b:27019,shard2c:27019
+Shard shard2 at shard2/shard2:27019
 {
   data: '23KiB',
   docs: 521,
@@ -63,13 +57,3 @@ Totals
   ]
 }
 ```
-
-ADRs:
-
-[task7](tasks/task7.md)
-
-[task8](tasks/task8.md)
-
-[task9](tasks/task9.md)
-
-[task10](tasks/task10.md)
